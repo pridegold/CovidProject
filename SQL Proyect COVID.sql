@@ -1,4 +1,4 @@
--- POWER BI VISUALIZATION --https://www.novypro.com/project/covid-19-6
+
 select location, date, total_cases, new_cases, total_deaths,
 population from CovidDeaths
 
@@ -8,8 +8,8 @@ population from CovidDeaths
 select location, date, total_cases, total_deaths,(total_deaths/total_cases)*100 as Porcentaje_Muertes
 from CovidDeaths where location = 'Argentina'
 
--- Total Cases Vs Population por a駉
--- Muestra que porcentaje de la poblaci髇 se contagio del virus.
+-- Total Cases Vs Population por a帽o
+-- Muestra que porcentaje de la poblaci贸n se contagio del virus.
 
 select location, year(date) as Anio,  sum(population)as Total_Population,sum(total_cases) as Total_cases,continent, (sum(total_cases)/sum(population))*100 as Porcentaje_Contagios
 from CovidDeaths where continent is not null and total_cases is not null group by location, year(date), continent order by location
@@ -44,51 +44,51 @@ from CovidDeaths where continent is not null group by continent order by Total_F
 select sum(new_cases) as Casos_Totales, sum(cast(new_deaths as int)) as Total_Fallecidos,
 round(sum(cast(new_deaths as int))/sum(new_cases)*100,2) as Porcentaje_Fallecidos from CovidDeaths where continent is not null
 
--- Poblaci髇 Total vs Vacunacion -- Total Vacunaci髇
+-- Poblaci贸n Total vs Vacunacion -- Total Vacunaci贸n
 
 select year(dea.date) as Anio,dea.continent, dea.location, dea.date, dea.population, vac.new_vaccinations,
-sum(cast(vac.new_vaccinations as int)) over (partition by dea.location order by dea.location, dea.date) as Total_Vacunaci髇
+sum(cast(vac.new_vaccinations as int)) over (partition by dea.location order by dea.location, dea.date) as Total_Vacunaci贸n
 from CovidDeaths dea inner join CovidVaccinations vac
 on dea.location = vac.location and dea.date = vac.date where dea.continent is not null and new_vaccinations is not null
 
 
--- SUBQUERY Para Realizar Calculos -- Poblaci髇 Vacunada
+-- SUBQUERY Para Realizar Calculos -- Poblaci贸n Vacunada
 
 with PopVsVac as
 (
 select dea.continent, dea.location, dea.date, dea.population, vac.new_vaccinations,
-sum(cast(vac.new_vaccinations as int)) over (partition by dea.location order by dea.location, dea.date) as Total_Vacunaci髇
+sum(cast(vac.new_vaccinations as int)) over (partition by dea.location order by dea.location, dea.date) as Total_Vacunaci贸n
 from CovidDeaths dea inner join CovidVaccinations vac
 on dea.location = vac.location and dea.date = vac.date where dea.continent is not null
 )
-select *, round((Total_Vacunaci髇/Population),4)*100 as Poblaci髇_Vacunada from PopVsVac
+select *, round((Total_Vacunaci贸n/Population),4)*100 as Poblaci贸n_Vacunada from PopVsVac
 
 
 -- Creando TEMP Table para la consulta anterior
 
-create table Porcentaje_Poblaci髇_Vacunada
+create table Porcentaje_Poblaci贸n_Vacunada
 (
 Continent nvarchar(255),
 Location nvarchar(255),
 Date datetime,
 Population numeric,
 New_vaccinations numeric,
-Total_Vacunaci髇 numeric)
+Total_Vacunaci贸n numeric)
 
-insert into Porcentaje_Poblaci髇_Vacunada
+insert into Porcentaje_Poblaci贸n_Vacunada
 select dea.continent, dea.location, dea.date, dea.population, vac.new_vaccinations,
-sum(cast(vac.new_vaccinations as int)) over (partition by dea.location order by dea.location, dea.date) as Total_Vacunaci髇
+sum(cast(vac.new_vaccinations as int)) over (partition by dea.location order by dea.location, dea.date) as Total_Vacunaci贸n
 from CovidDeaths dea inner join CovidVaccinations vac
 on dea.location = vac.location and dea.date = vac.date where dea.continent is not null
 
-select * from Porcentaje_Poblaci髇_Vacunada
+select * from Porcentaje_Poblaci贸n_Vacunada
 
 -- Crear view para visualizar cuando sea necesario
 
-Create View Poblaci髇_Vacunada as
+Create View Poblaci贸n_Vacunada as
 select dea.continent, dea.location, dea.date, dea.population, vac.new_vaccinations,
-sum(cast(vac.new_vaccinations as int)) over (partition by dea.location order by dea.location, dea.date) as Total_Vacunaci髇
+sum(cast(vac.new_vaccinations as int)) over (partition by dea.location order by dea.location, dea.date) as Total_Vacunaci贸n
 from CovidDeaths dea inner join CovidVaccinations vac
 on dea.location = vac.location and dea.date = vac.date where dea.continent is not null
 
-select * from Poblaci髇_Vacunada
+select * from Poblaci贸n_Vacunada
